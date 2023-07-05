@@ -9,6 +9,7 @@
 @using Microsoft.Extensions.Localization;
 @using Volo.Abp.Application.Dtos;
 @using Volo.Abp.AspNetCore.Components.Web;
+@inject IJSRuntime JSRuntime;
 
 @inherits AbpCrudPageBase<IOrderAppService, OrderDto, Guid, PagedAndSortedResultRequestDto, CreateUpdateOrderDto>
 @inject IStringLocalizer<HqSoftSaleResource> L
@@ -20,19 +21,8 @@
 
 
 
-<Row Spacing="2" xs="1">
-    <Column Style="padding:10px 10px 10px 120px">
-        <Row Spacing="2" xs="1">
-            <Column Style="padding:10px 10px 10px 120px">
-                <Button Color="Color.Primary" Clicked="CreateEntityAsync">
-                    <Icon Name="IconName.Save" IconStyle="IconStyle.Regular" /> @L["Save"]
-                </Button>
-            </Column>
-        </Row>
-    </Column>
-</Row>
 <DxStackLayout CssClass="w-100 ch-480" Orientation="DevExpress.Blazor.Orientation.Vertical">
-    <Items> 
+    <Items>
         <DxStackLayoutItem>
             <Template>
                 <Validations @ref="@CreateValationRef" Model="@NewDetailEntity" ValidateOnLoad="false">
@@ -45,7 +35,7 @@
                             EditMode="GridEditMode.EditRow"
                             EditorRenderMode="GridEditorRenderMode.Integrated">
                         <Columns>
-                            <DxGridDataColumn FieldName="OrderID" Width="10%" MinWidth="80">
+                            <DxGridDataColumn FieldName="OrderID" MinWidth="50">
                                 <CellEditTemplate>
                                     <TextEdit @bind-Text="NewDetailEntity.OrderID" Disabled />
                                 </CellEditTemplate>
@@ -56,16 +46,16 @@
                                                 FilteringMode="DataGridFilteringMode.Contains"
                                                 ShowDropDownButton="false"
                                                 ValueChanged="@((item) => {
-                                                var product = products.FirstOrDefault(p => p.ProductID == item);
-                                                if (product != null) {
-                                                            NewDetailEntity.ProductID = product.ProductID;
-                                                            NewDetailEntity.ProductName = product.ProductName;
-                                                            NewDetailEntity.Quantity = NewDetailEntity.Quantity;
-                                                            NewDetailEntity.Price = product.Price;
-                                                }})">
+                                    var product = products.FirstOrDefault(p => p.ProductID == item);
+                                    if (product != null) {
+                                    NewDetailEntity.ProductID = product.ProductID;
+                                    NewDetailEntity.ProductName = product.ProductName;
+                                    NewDetailEntity.Quantity = NewDetailEntity.Quantity;
+                                    NewDetailEntity.Price = product.Price;
+                                    }})">
                                         <Buttons>
                                             <div id="dropdown-customization-target-container">
-                                                <DxEditorButton IconCssClass="fa-light fa-plus"
+                                                <DxEditorButton IconCssClass="fa fa-search"
                                                                 Click="() => IsOpen = !IsOpen" IconPosition="ButtonIconPosition.BeforeText">
                                                 </DxEditorButton>
                                             </div>
@@ -80,7 +70,7 @@
                                     </DxComboBox>
                                 </CellEditTemplate>
                             </DxGridDataColumn>
-                            <DxGridDataColumn FieldName="ProductID" MinWidth="100">
+                            <DxGridDataColumn FieldName="ProductID" MinWidth="150">
                                 <CellEditTemplate>
                                     <TextEdit @bind-Text="NewDetailEntity.ProductID" Disabled />
                                 </CellEditTemplate>
@@ -96,24 +86,34 @@
                                                    ValueChanged="@((newQuantity)=>UpdateTotal(newQuantity))" />
                                 </CellEditTemplate>
                             </DxGridDataColumn>
-                            <DxGridDataColumn FieldName="Price" MinWidth="120">
+                            <DxGridDataColumn FieldName="Price" MinWidth="100">
                                 <CellEditTemplate>
                                     <NumericPicker Min="0" @bind-Value="NewDetailEntity.Price" />
                                 </CellEditTemplate>
                             </DxGridDataColumn>
-                            <DxGridDataColumn FieldName="ExtenedAmount" Width="10%" MinWidth="120">
+                            <DxGridDataColumn FieldName="ExtenedAmount" MinWidth="100">
                                 <CellEditTemplate>
                                     <NumericPicker Min="0" @bind-Value="NewDetailEntity.ExtenedAmount" Disabled />
                                 </CellEditTemplate>
                             </DxGridDataColumn>
                         </Columns>
                     </DxGrid>
-                    <DxButton Click="@(() => Grid.StartEditNewRowAsync())" Text="New" />
+                    <DxStackLayout>
+                        <Items>
+                            <Row>
+                                <Column Style="padding:10px">
+                                    <DxButton IconCssClass="fa fa-plus" Click="@(() => Grid.StartEditNewRowAsync())" />
+                                    <DxButton IconCssClass="fa fa-minus" style=" background: red; border: red;" Click="@(() => Grid.CancelEditAsync())" />
+                                </Column>
+                            </Row>
+                        </Items>
+                    </DxStackLayout>
                 </Validations>
             </Template>
         </DxStackLayoutItem>
     </Items>
 </DxStackLayout>
+
 
 <DxDropDown @bind-IsOpen="@IsOpen"
             MinWidth="max(25vw, 250px)"
@@ -126,30 +126,18 @@
             HeaderText="Product List"
             FooterVisible="true">
     <BodyContentTemplate>
-        <DxGrid @ref="Grid"
-                Data="products"
-                PageSize="12"
-                KeyFieldName="ProductID"
-                ValidationEnabled="false"
-                EditMode="GridEditMode.EditRow"
-                EditorRenderMode="GridEditorRenderMode.Integrated"
-                SelectionMode="GridSelectionMode.Multiple"
-                FilterMenuButtonDisplayMode="GridFilterMenuButtonDisplayMode.Always"
-                ShowSearchBox="true"
-                RowDoubleClick="OnRowDoubleClick"
-                AllowSelectRowByClick="true">
-            <Columns>
-                <DxGridDataColumn FieldName="ProductID" MinWidth="150" />
-                <DxGridDataColumn FieldName="ProductName" MinWidth="200" />
-                <DxGridDataColumn FieldName="UnitType" MinWidth="150" />
-                <DxGridDataColumn FieldName="Type" MinWidth="150" />
-                <DxGridDataColumn FieldName="Price" MinWidth="150" />
-            </Columns>
-        </DxGrid>
-        <DxButton Click="@GotoCreateProduct" Text="New" />
+
+        <HqSoftSale.Blazor.Components.DetailComponent TItem="ProductDto"
+                                                      TColumns="List<(string Field, string Caption)>"
+                                                      Columns="@columns"
+                                                      Data="@products"
+                                                      RowDoubleClick="OnRowDoubleClick" />
+
+        <Column Style="padding:10px">
+            <DxButton IconCssClass="fa fa-plus" Text="New" Click="@context.CloseCallback" />
+        </Column>
     </BodyContentTemplate>
     <FooterContentTemplate>
-        <DxButton CssClass="popup-button my-1 ms-2" RenderStyle="ButtonRenderStyle.Primary" Text="OK" Click="@context.CloseCallback" />
         <DxButton CssClass="popup-button my-1 ms-2" RenderStyle="ButtonRenderStyle.Secondary" Text="Cancel" Click="@context.CloseCallback" />
     </FooterContentTemplate>
 </DxDropDown> 

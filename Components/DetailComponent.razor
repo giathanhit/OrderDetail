@@ -2,25 +2,37 @@
 @typeparam TColumns
 
 <DxGrid Data="@Data"
-        ValidationEnabled="false" 
+        PageSize="5"
+        ValidationEnabled="false"
+        RowDoubleClick="RowDoubleClick"
         EditMode="GridEditMode.EditRow"
-        EditorRenderMode="GridEditorRenderMode.Integrated"
         SelectionMode="GridSelectionMode.Multiple"
+        EditorRenderMode="GridEditorRenderMode.Integrated" 
         FilterMenuButtonDisplayMode="GridFilterMenuButtonDisplayMode.Always" 
         ShowSearchBox="true" 
-        AllowSelectRowByClick="true">
-    <Columns>
+        AllowSelectRowByClick="true"
+        PageSizeSelectorVisible="true"
+        PagerVisibleNumericButtonCount="5"
+        PagerSwitchToInputBoxButtonCount="5"
+        PagerPosition="GridPagerPosition.Bottom"
+        PageSizeSelectorAllRowsItemVisible="true"
+        PageSizeSelectorItems="@(new int[] { 5, 10, 20, 50, 100 })">
+    <Columns> 
         @foreach (var column in Columns)
         {
-            <DxGridDataColumn FieldName="@column.Field" Caption="@column.Caption" />
+            <DxGridDataColumn FieldName="@column.FieldName" Caption="@column.FieldName" MinWidth="200" /> 
         }
     </Columns>
-</DxGrid>
+</DxGrid>  
 
 @code {
     [Parameter]
     public IReadOnlyList<TItem> Data { get; set; }
 
     [Parameter]
-    public List<(string Field, string Caption)> Columns { get; set; } 
+    public List<(string FieldName, string Caption)> Columns { get; set; }
+
+    [Parameter]
+    public EventCallback<GridRowClickEventArgs> RowDoubleClick { get; set; } 
+
 }

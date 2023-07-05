@@ -34,9 +34,28 @@ namespace HqSoftSale.Blazor.Pages.Orders
         private int CurrentPage { get; set; }
         private string CurrentSorting { get; set; }
         private List<CreateUpdateOrdDetailsDto> productDtoList { get; set; }
+
         IGrid Grid { get; set; }
 
-         
+
+        List<(string Field, string Caption)> columns = new List<(string Field, string Caption)>
+        {
+            (nameof(ProductDto.ProductID), "Product ID"),
+            (nameof(ProductDto.ProductName), "Product Name"),
+            (nameof(ProductDto.UnitType), "Unit Type"),
+            (nameof(ProductDto.Type), "Type"),
+            (nameof(ProductDto.Price), "Price")
+        };
+
+        void OnRowDoubleClick(GridRowClickEventArgs e)
+        {
+            NewDetailEntity.ProductID = $"{e.Grid.GetRowValue(e.VisibleIndex, "ProductID")} ";
+            NewDetailEntity.ProductName = $"{e.Grid.GetRowValue(e.VisibleIndex, "ProductName")} ";
+            string priceS = $"{e.Grid.GetRowValue(e.VisibleIndex, "Price")} ";
+            NewDetailEntity.Price = double.Parse(priceS);
+        }
+
+
         protected override async Task OnInitializedAsync()
         {
             productDtoList = new List<CreateUpdateOrdDetailsDto>();
@@ -50,16 +69,7 @@ namespace HqSoftSale.Blazor.Pages.Orders
             NewDetailEntity.OrderID = await OrderAppService.GenerateOrderIdAsync();
             await CalculatePrice();
             await GetProductAsync();
-        } 
-
-        void OnRowDoubleClick(GridRowClickEventArgs e)
-        {
-            NewDetailEntity.ProductID = $"{e.Grid.GetRowValue(e.VisibleIndex, "ProductID")} ";
-            NewDetailEntity.ProductName = $"{e.Grid.GetRowValue(e.VisibleIndex, "ProductName")} ";
-            string priceS = $"{e.Grid.GetRowValue(e.VisibleIndex, "Price")} ";
-            NewDetailEntity.Price = double.Parse(priceS);
         }
-
 
         protected virtual async Task CreateEntityAsync()
         {
@@ -101,13 +111,13 @@ namespace HqSoftSale.Blazor.Pages.Orders
             products = result.Items;
             TotalCount = (int)result.TotalCount;
         }
-         
+
         private void UpdateTotal(int newQuantity)
         {
             NewDetailEntity.Quantity = newQuantity;
             NewDetailEntity.ExtenedAmount = NewDetailEntity.Quantity * NewDetailEntity.Price;
         }
-         
+
         protected virtual async Task CalculatePrice()
         {
             if (!string.IsNullOrEmpty(NewDetailEntity.ProductID))

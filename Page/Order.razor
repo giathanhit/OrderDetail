@@ -1,28 +1,27 @@
-﻿@page "/productsTest"
-@using HqSoftSale.OrderDetails;
+﻿@page "/ordersTest"
 @using HqSoftSale.Orders;
 @using HqSoftSale.Products;
 @using Volo.Abp.Application.Dtos;
 
-@inject IProductAppService ProductAppService
+@inject IOrderAppService ProductAppService
 @inherits AbpCrudPageBase<IOrderAppService, OrderDto, Guid, PagedAndSortedResultRequestDto, CreateUpdateOrderDto>
 
 
 
-<h1>Product List</h1>
-<HqSoftSale.Blazor.Components.DetailComponent TItem="ProductDto"
+<h1>Order List</h1>
+<HqSoftSale.Blazor.Components.DetailComponent TItem="OrderDto"
                                               TColumns="List<(string FieldName, string Caption)>"
-                                              Columns="@columns" Data="@productList" />
+                                              Columns="@columns"
+                                              Data="@orderList" />
 
 
 
 @code {
-    IReadOnlyList<ProductDto> productList { get; set; }
-    protected CreateUpdateOrdDetailsDto NewDetailEntity = new();
+    IReadOnlyList<OrderDto> orderList { get; set; }
     private int PageSize { get; set; } = 1000;
     private int CurrentPage { get; set; }
     private string CurrentSorting { get; set; }
-    IGrid Grid { get; set; }
+    IGrid Grid { get; set; } 
 
     protected override async Task OnInitializedAsync()
     {
@@ -31,25 +30,24 @@
 
     List<(string FieldName, string Caption)> columns = new List<(string FieldName, string Caption)>
     {
-        ("ProductID", "Product ID"),
-        ("ProductName", "Product Name"),
-        ("UnitType", "Unit Type"),
-        ("Type", "Type"),
-        ("Price", "Price")
-    }; 
+        ("OrderNumber", "Order Number"),
+        ("OrderStatus", "Order Status"),
+        ("Customer", "Customer"),
+        ("OrderDate", "Order Date")
+    };
 
 
     async Task GetListAsync()
     {
         var result = await ProductAppService.GetListAsync(
-            new GetProductListDto
+            new GetOrderListDto
                 {
                     MaxResultCount = PageSize,
                     SkipCount = CurrentPage * PageSize,
                     Sorting = CurrentSorting
                 }
         );
-        productList = result.Items;
+        orderList = result.Items;
         TotalCount = (int)result.TotalCount;
     }
 }
