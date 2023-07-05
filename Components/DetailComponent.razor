@@ -1,0 +1,26 @@
+﻿@typeparam TItem
+@typeparam TColumns
+
+<DxGrid Data="@Data"
+        ValidationEnabled="false" 
+        EditMode="GridEditMode.EditRow"
+        EditorRenderMode="GridEditorRenderMode.Integrated"
+        SelectionMode="GridSelectionMode.Multiple"
+        FilterMenuButtonDisplayMode="GridFilterMenuButtonDisplayMode.Always" 
+        ShowSearchBox="true" 
+        AllowSelectRowByClick="true">
+    <Columns>
+        @foreach (var column in Columns)
+        {
+            <DxGridDataColumn FieldName="@column.Field" Caption="@column.Caption" />
+        }
+    </Columns>
+</DxGrid>
+
+@code {
+    [Parameter]
+    public IReadOnlyList<TItem> Data { get; set; }
+
+    [Parameter]
+    public List<(string Field, string Caption)> Columns { get; set; } 
+}

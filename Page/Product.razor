@@ -1,0 +1,53 @@
+﻿@page "/product"
+@using HqSoftSale.Orders;
+@using HqSoftSale.Products;
+@using Volo.Abp.Application.Dtos;
+
+@inject IProductAppService ProductAppService
+@inherits AbpCrudPageBase<IOrderAppService, OrderDto, Guid, PagedAndSortedResultRequestDto, CreateUpdateOrderDto>
+
+
+
+<h1>Product List</h1>
+<HqSoftSale.Blazor.Components.DetailComponent TItem="ProductDto"
+                                              TColumns="List<(string Field, string Caption)>"
+                                              Columns="@columns" Data="@productList" />
+
+
+
+@code {
+    IReadOnlyList<ProductDto> productList { get; set; }
+    private int PageSize { get; set; } = 1000;
+    private int CurrentPage { get; set; }
+    private string CurrentSorting { get; set; }
+    IGrid Grid { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetListAsync();
+    }
+
+    List<(string Field, string Caption)> columns = new List<(string Field, string Caption)>
+    {
+        (nameof(ProductDto.ProductID), "Product ID"),
+        (nameof(ProductDto.ProductName), "Product Name"),
+        (nameof(ProductDto.UnitType), "Unit Type"),
+        (nameof(ProductDto.Type), "Type"),
+        (nameof(ProductDto.Price), "Price")
+    };
+
+
+    async Task GetListAsync()
+    {
+        var result = await ProductAppService.GetListAsync(
+            new GetProductListDto
+                {
+                    MaxResultCount = PageSize,
+                    SkipCount = CurrentPage * PageSize,
+                    Sorting = CurrentSorting
+                }
+        );
+        productList = result.Items;
+        TotalCount = (int)result.TotalCount;
+    }
+}
