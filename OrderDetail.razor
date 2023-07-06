@@ -20,7 +20,11 @@
 @inject NavigationManager NavigationManager
 
 
-
+@if (IsCreatePopupVisible)
+{
+    <HqSoftSale.Blazor.Components.PopupProduct @ref="PopupProduct" OnProductCreated="OnProductCreated" />
+}
+ 
 <DxStackLayout CssClass="w-100 ch-480" Orientation="DevExpress.Blazor.Orientation.Vertical">
     <Items>
         <DxStackLayoutItem>
@@ -134,7 +138,8 @@
                                                       RowDoubleClick="OnRowDoubleClick" />
 
         <Column Style="padding:10px">
-            <DxButton IconCssClass="fa fa-plus" Text="New" Click="@context.CloseCallback" />
+            <DxButton IconCssClass="fa fa-plus" Text="New" Click="ShowCreatePopup" />
+            <DxButton IconCssClass="fa fa-spinner" Text="Load" Click="GetProductAsync" />
         </Column>
     </BodyContentTemplate>
     <FooterContentTemplate>

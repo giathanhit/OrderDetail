@@ -3,6 +3,7 @@ using DevExpress.Blazor;
 using DevExpress.Blazor.Internal;
 using DevExpress.Utils.About;
 using DevExpress.XtraPrinting;
+using HqSoftSale.Blazor.Components;
 using HqSoftSale.OrderDetails;
 using HqSoftSale.Orders;
 using HqSoftSale.Products;
@@ -36,25 +37,6 @@ namespace HqSoftSale.Blazor.Pages.Orders
         private List<CreateUpdateOrdDetailsDto> productDtoList { get; set; }
 
         IGrid Grid { get; set; }
-
-
-        List<(string Field, string Caption)> columns = new List<(string Field, string Caption)>
-        {
-            (nameof(ProductDto.ProductID), "Product ID"),
-            (nameof(ProductDto.ProductName), "Product Name"),
-            (nameof(ProductDto.UnitType), "Unit Type"),
-            (nameof(ProductDto.Type), "Type"),
-            (nameof(ProductDto.Price), "Price")
-        };
-
-        void OnRowDoubleClick(GridRowClickEventArgs e)
-        {
-            NewDetailEntity.ProductID = $"{e.Grid.GetRowValue(e.VisibleIndex, "ProductID")} ";
-            NewDetailEntity.ProductName = $"{e.Grid.GetRowValue(e.VisibleIndex, "ProductName")} ";
-            string priceS = $"{e.Grid.GetRowValue(e.VisibleIndex, "Price")} ";
-            NewDetailEntity.Price = double.Parse(priceS);
-        }
-
 
         protected override async Task OnInitializedAsync()
         {
@@ -91,12 +73,46 @@ namespace HqSoftSale.Blazor.Pages.Orders
                 await HandleErrorAsync(ex);
             }
         }
+         
+        //Datagrid DetailComponent
 
-        void GotoCreateProduct()
+        List<(string Field, string Caption)> columns = new List<(string Field, string Caption)>
         {
-            NavigationManager.NavigateTo("/products");
+            ("ProductID", "Product ID"),
+            ("ProductName", "Product Name"),
+            ("UnitType", "Unit Type"),
+            ("Type", "Type"),
+            ("Price", "Price")
+        };
+
+        void OnRowDoubleClick(GridRowClickEventArgs e)
+        {
+            NewDetailEntity.ProductID = $"{e.Grid.GetRowValue(e.VisibleIndex, "ProductID")} ";
+            NewDetailEntity.ProductName = $"{e.Grid.GetRowValue(e.VisibleIndex, "ProductName")} ";
+            string priceS = $"{e.Grid.GetRowValue(e.VisibleIndex, "Price")} ";
+            NewDetailEntity.Price = double.Parse(priceS);
         }
 
+        //Popup thêm mới sản phẩm
+        private PopupProduct PopupProduct;
+        private bool IsCreatePopupVisible = false;
+        private async Task ShowCreatePopup()
+        {
+            try
+            {
+                IsCreatePopupVisible = true;
+                await PopupProduct.ShowPopupAsync();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Lỗi khi mở popup: " + ex.Message);
+            }
+        }
+        private void OnProductCreated()
+        { 
+            NavigationManager.NavigateTo("/order/new", forceLoad: true);
+        }
+          
         private async Task GetProductAsync()
         {
             var result = await ProductAppService.GetListAsync(
